@@ -4,11 +4,16 @@ from datetime import datetime, timedelta
 import math
 import numpy as np
 import random
+import rasterio
+from pyproj import Transformer
 
+dem = rasterio.open("SRTM.tif")
+transformer = Transformer.from_crs("EPSG:4326", dem.crs, always_xy=True)
 
 def convert_to_czml_3Dmodel(input_file, output_file, start_date, current_time):
     with open(input_file, 'r') as input_csv:
-        reader = csv.DictReader(input_csv)
+        # reader = csv.DictReader(input_csv)
+        reader = csv.reader(input_csv, delimiter=';', quotechar='|')
 
         czml = [{
             "id": "document",
@@ -23,29 +28,45 @@ def convert_to_czml_3Dmodel(input_file, output_file, start_date, current_time):
         vehicle_positions = {}
         max_timestep = 0.0
         for row in reader:
-            vehicle_id = row['id']
-            vehicle_type = row['type']
-            if vehicle_type not in ['passenger', 'pedestrian']:
-                continue  # skip if not passenger or pedestrian
-            timestep = float(row['timestep'])
+            vehicle_id = row[2]
+            vehicle_type = row[7]
+            # if vehicle_type not in ['passenger', 'pedestrian']:
+            #     continue  # skip if not passenger or pedestrian
+            timestep = float(row[0])
             if timestep > max_timestep:
                 max_timestep = timestep
             if vehicle_id not in vehicle_positions:
-                if vehicle_type == 'passenger':
-                    # Use a random number between 1 and 16 to generate the link to the 3D model
-                    # model_link = f"./3Dmodels/{random.randint(1, 16)}.gltf"
-                    model_link = f"./3Dmodels/CesiumMilkTruck.glb"
-                elif vehicle_type == 'pedestrian':
-                    model_link = './3Dmodels/Cesium_Man.glb'
-                else:
-                    model_link = './3Dmodels/notavailable.glb'
+                match random.randint(1, 6):
+                    case 1:
+                       model_link = f"Coches/CocheAmarillo.glb"
+                    case 2:
+                        model_link = f"Coches/CocheAzul.glb"
+                    case 3:
+                        model_link = f"Coches/CocheRojo.glb"
+                    case 4:
+                        model_link = f"Coches/CocheVerde.glb"
+                    case 5:
+                        model_link = f"Coches/CocheNaranja.glb"
+                    case 6:
+                        model_link = f"Coches/CocheNegro.glb"                    
+                
+                # if vehicle_type == 'passenger':
+                #     # Use a random number between 1 and 16 to generate the link to the 3D model
+                #     model_link = f"./3Dmodels/{random.randint(1, 16)}.glb"
+                #     # model_link = f"./3Dmodels/CesiumMilkTruck.glb"
+                # elif vehicle_type == 'pedestrian':
+                #     model_link = './3Dmodels/Cesium_Man.glb'
+                # else:
+                #     model_link = './3Dmodels/notavailable.glb'
 
                 vehicle_positions[vehicle_id] = {
                     "id": vehicle_id,
                     "name": vehicle_id,
                     "description": "1",
                     "model": {
-                        "gltf": model_link,
+                        # "gltf": model_link,
+                        "uri": model_link,
+                        "scale":50,
                     },
                     "position": {
                         "epoch": start_date.isoformat() + 'Z',
@@ -57,21 +78,28 @@ def convert_to_czml_3Dmodel(input_file, output_file, start_date, current_time):
                     }
                 }
 
+            vehicle_positions[vehicle_id]['position']['cartographicDegrees'].extend(
+                [float(row[0]), float(row[8]), float(row[9]), get_alt(float(row[8]), float(row[9]))])
+
+
+            q = get_orientation(float(row[9]), (float(row[8])), 0, -(float(row[5])), (float(row[1]))+180) #depends on orientation of 3d model in local (model) frame
+            vehicle_positions[vehicle_id]['orientation']['unitQuaternion'].extend([float(row[0]), *q])
+            
             # Set the z value based on the presence of the 'z' column in the CSV
-            if 'z' in row:
-                vehicle_positions[vehicle_id]['position']['cartographicDegrees'].extend(
-                    [float(row['timestep']), float(row['x']), float(row['y']), float(row['z'])])
-            else:
-                vehicle_positions[vehicle_id]['position']['cartographicDegrees'].extend(
-                    [float(row['timestep']), float(row['x']), float(row['y']), 0])
+            # if 'z' in row:
+            #     vehicle_positions[vehicle_id]['position']['cartographicDegrees'].extend(
+            #         [float(row[0]), float(row[7]), float(row[8]), get_alt(float(row[7]), float(row[8]))])
+            # else:
+            #     vehicle_positions[vehicle_id]['position']['cartographicDegrees'].extend(
+            #         [float(row['timestep']), float(row['x']), float(row['y']), 0])
 
             # Set the orientation based on the corresponding longitude, latitude, slope (if available) and angle values in the CSV
-            if 'slope' in row:
-                q = get_orientation(float(row['y']), (float(row['x'])), 0, -(float(row['slope'])), (float(row['angle']))+180) #depends on orientation of 3d model in local (model) frame
-                vehicle_positions[vehicle_id]['orientation']['unitQuaternion'].extend([float(row['timestep']), *q])
-            else:
-                q = get_orientation(float(row['y']), (float(row['x'])), 0, 0, (float(row['angle'])) + 180)  # depends on orientation of 3d model in local (model) frame
-                vehicle_positions[vehicle_id]['orientation']['unitQuaternion'].extend([float(row['timestep']), *q])
+            # if 'slope' in row:
+            #     q = get_orientation(float(row['y']), (float(row['x'])), 0, -(float(row['slope'])), (float(row['angle']))+180) #depends on orientation of 3d model in local (model) frame
+            #     vehicle_positions[vehicle_id]['orientation']['unitQuaternion'].extend([float(row['timestep']), *q])
+            # else:
+            #     q = get_orientation(float(row['y']), (float(row['x'])), 0, 0, (float(row['angle'])) + 180)  # depends on orientation of 3d model in local (model) frame
+            #     vehicle_positions[vehicle_id]['orientation']['unitQuaternion'].extend([float(row['timestep']), *q])
 
         # Update the end time of the interval to the maximum timestep value
         end_date = start_date + timedelta(seconds=max_timestep)
@@ -82,6 +110,12 @@ def convert_to_czml_3Dmodel(input_file, output_file, start_date, current_time):
     with open(output_file, 'w') as output_czml:
         json.dump(czml, output_czml, indent=1)
 
+
+def get_alt(lon, lat):
+    x, y = transformer.transform(lon, lat)
+    for val in dem.sample([(x, y)]):
+        print(val)
+        return float(val)
 
 def get_orientation(lat, lon, heading, pitch, roll):
     # Convert angles to radians
@@ -184,5 +218,11 @@ def quaternion_multiply(q1, q2):
 
 if __name__ == '__main__':
     start_date = datetime(2023, 6, 26, 12, 0, 0)
-    current_time = 180
-    convert_to_czml_3Dmodel('./input/sumo_fcd_sample.csv', './output/czml_3Dmodels_sample.czml', start_date, current_time)
+    current_time = 389
+    print("Generating CZML with 3D models...")
+    print("Input CSV: fcd.csv")
+    print("Output CZML: czml_3Dmodels_sample.czml")
+    print("Start date:", start_date)
+    print("Current time (seconds since start):", current_time)
+    
+    convert_to_czml_3Dmodel('fcd.csv', 'czml_3Dmodels_sample.czml', start_date, current_time)
