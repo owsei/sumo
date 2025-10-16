@@ -1,0 +1,47 @@
+1: 
+Descargar data de OpenStreetMap y guardarlo como "<nombre_archivo>.osm"
+
+2 - generar la red desde mapa osm
+netconvert --osm-files <nombre_archivo>.osm -o <nombre_archivo>.net.xml
+
+ 3: Crear un archivo llamado typemap.xml para darle colores a los diferentes poligonos
+
+4: Agregar los "polygons" estas son las características del mapa en general (areas verdes, edificios, etc)
+polyconvert --net-file centro.net.xml --osm-files centro.osm --type-file typemap.xml -o centro.poly.xml
+
+5: Copiar la ruta del archivo randomTrips.py(tambien se puede ejecutar desde donde esta instalado):
+python "C:\Program Files (x86)\Eclipse\Sumo/tools/randomTrips.py" --net-file "C:\Users\Pedro\Desktop\SUMO\CENTRO\centro.net.xml" --route-file "centro.rou.xml" -e 50 -l"  
+
+
+6: crear  "<nombre_archivo>.sumo.cfg" 
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/sumoConfiguration.xsd">
+    <input>
+        <net-file value="<nombre_archivo>.net.xml"/>
+        <route-files value="<nombre_archivo>.rou.xml"/>
+        <additional-files value="<nombre_archivo>.poly.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="1000"/>
+        <step-length value="0.1"/>
+    </time>
+</configuration>
+
+7:  ejecutar ejecutar sumo
+sumo-gui -c centro.sumo.cfg
+
+8 crear archivo que genera salida de posiciones (FCD)
+sumo -c mi_simulacion.sumocfg --fcd-output fcd.xml // esto es para sumo
+
+sumo -c mi_simulacion.sumocfg --fcd-output fcd.xml --fcd-output.geo //esto es si tiene coordenadas georeferenciadas
+
+9: convertir fcd xml to csv
+python <RUTA_A_SUMO>/tools/xml/xml2csv.py fcd.xml -o fcd.csv
+python "C:\Program Files (x86)\Eclipse\Sumo\tools\xml\xml2csv.py" centro_fcd.xml -o fcd.csv
+
+10 crear czml para cesium
+sumo2czml_3dmodels.py -> function convert_to_czml_3Dmodel('fcd.csv', 'czml_3Dmodels.czml', start_date, current_time)
+el fichero se debe llamar fcd.xml y como resultado se obtiene el fichero  'czml_3Dmodels.czml'
+
