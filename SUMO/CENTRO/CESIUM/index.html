@@ -83,29 +83,37 @@
 
     // Muestra CZML de ejemplo (si no se carga nada)
     const sampleCzml = [
-      { id: 'document', name: 'Sample CZML', version: '1.0' },
-      {
-        id: 'vehicle_1',
-        name: 'Vehículo ejemplo',
-        availability: '2025-10-15T00:00:00Z/2025-10-15T00:00:30Z',
-        position: {
-          epoch: '2025-10-15T00:00:00Z',
-          cartographicDegrees: [
-            0, -1.658251,42.807485, 500,
-            10, -1.6480, 42.8150, 500,
-            20, -1.6475, 42.8158, 500
-          ]
+        {
+          "id": "document",
+          "name": "CZML con modelo GLB",
+          "version": "1.0"
         },
-        model: {
-          uri: "Coches/CocheRojo.glb",
-          scale:50,
-          // heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND, // Úsalo si el punto está en terreno
-          // disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        point: { pixelSize: 8, color: { rgba: [255, 0, 0, 255] } },
-        path: { show: true, leadTime: 0, trailTime: 60 }
-      }
-    ];
+        {
+          "id": "miModeloGLB",
+          "name": "Mi modelo GLB",
+          "availability": "2025-10-16T00:00:00Z/2026-10-16T00:00:00Z",
+          "position": {
+            "cartographicDegrees": [
+              -1.658251,42.807485,10
+            ]
+          },
+          "orientation": {
+            "unitQuaternion": [
+              0.0, 0.0, 0.0, 1.0
+            ]
+          },
+          "model": {
+            "gltf": "Coches/CocheAzul.glb",
+            "scale": 50,
+            
+          },
+          "properties": {
+            "autor": "tu-nombre",
+            "nota": "Reemplaza la URL del glb y las coordenadas"
+          }
+        }
+      ]
+
 
 
     let czmlSample = new Cesium.CzmlDataSource.load(sampleCzml);
