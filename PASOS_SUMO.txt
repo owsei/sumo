@@ -1,5 +1,6 @@
 1: 
-Descargar data de OpenStreetMap y guardarlo como "<nombre_archivo>.osm"
+Descargar data de OpenStreetMap y
+ guardarlo como "<nombre_archivo>.osm"
 
 2 - generar la red desde mapa osm
 netconvert --osm-files <nombre_archivo>.osm -o <nombre_archivo>.net.xml
@@ -42,3 +43,14 @@ python <RUTA_A_SUMO>/tools/xml/xml2csv.py fcd.xml -o fcd.csv
 python "C:\Program Files (x86)\Eclipse\Sumo\tools\xml\xml2csv.py" centro_fcd.xml -o fcd.csv
 
 
+*******************************************
+con esto si le doy dos edge busca la ruta mas corta, exiete la posibilidad de darle puntos intermedios
+duarouter --trip-files mytrips.xml --net-file AutAviAutEnlAviEnl_Geo-OutRmvNod-Roun-Rmp-Jun-TlsGs-TlsDscrd-TlsJo-RmIso.net.xml --output-file my_route.rou.xml
+
+--write-trips.geo añade   puntos geo
+--write-trips.junctions va un nodo a otro nodo
+
+
+**********************
+convierte la red a geojson
+python tools/net/net2geojson.py -n <net-file> -o output.geojson
