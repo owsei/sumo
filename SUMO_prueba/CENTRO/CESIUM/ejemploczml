@@ -1,0 +1,34 @@
+[
+  {
+    "id": "document",
+    "name": "CZML con modelo GLB",
+    "version": "1.0"
+  },
+  {
+    "id": "miModeloGLB",
+    "name": "Mi modelo GLB",
+    "availability": "2025-10-16T00:00:00Z/2026-10-16T00:00:00Z",
+    "position": {
+      "cartographicDegrees": [
+        -3.7038,
+        40.4168,
+        10
+      ]
+    },
+    "orientation": {
+      "unitQuaternion": [
+        0.0, 0.0, 0.0, 1.0
+      ]
+    },
+    "model": {
+      "gltf": "Coches/CocheAzul.glb",
+      "scale": 1.0,
+      "minimumPixelSize": 64,
+      "runAnimations": true
+    },
+    "properties": {
+      "autor": "tu-nombre",
+      "nota": "Reemplaza la URL del glb y las coordenadas"
+    }
+  }
+]

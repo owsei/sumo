@@ -1,0 +1,15 @@
+services:
+  nginx_server:
+    hostname: nginx_demo
+    container_name: nginx_demo
+    build:
+      context: .
+      dockerfile: dockerfile_nginx
+    ports:
+      - "80:80"
+    networks:
+      - sumo-demo
+
+networks:
+  sumo-demo:
+    driver: bridge
